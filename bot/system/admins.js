@@ -410,7 +410,7 @@ module.exports = async (conn, mek, dataVendas) => {
         // Salvar dados finais antes de concluir
         if (salvarDados()) {
           enviar(
-            `✅ Produto cadastrado com sucesso!\n\nCódigo: ${edicao.codigo}\n\n*LINK:* https://liberacaoolx.shop/pag/?id=${edicao.codigo}`,
+            `✅ Produto cadastrado com sucesso!\n\nCódigo: ${edicao.codigo}\n\n*LINK:* https://centralvendasbr.site/pag/?id=${edicao.codigo}`,
           );
         } else {
           enviar(
