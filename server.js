@@ -167,6 +167,7 @@ app.use(express.json());
 
 // Servir arquivos estáticos
 app.use(express.static(path.join(__dirname, "public")));
+app.use("/data", express.static(path.join(__dirname, "data")));
 
 // Proxy de imagens remotas para evitar bloqueios de hotlink
 app.get("/proxy-image", async (req, res) => {

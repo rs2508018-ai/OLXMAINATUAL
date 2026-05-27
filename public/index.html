@@ -58,6 +58,10 @@
                 <a href="/">OLX</a> &gt; <a href="/vendas">Minhas Vendas</a> &gt; <span>Detalhes da Venda</span>
             </div>
 
+            <div id="erro-container" class="erro-produtos hidden" style="display:none;">
+                <p>Não foi possível carregar os dados do produto. Verifique o ID e tente novamente.</p>
+            </div>
+
             <div class="card produto-info">
                 <div class="produto-galeria">
                     <div class="imagem-principal">
@@ -311,7 +315,9 @@
                         }
                         const contentType = response.headers.get('content-type') || '';
                         if (!contentType.includes('application/json')) {
-                            throw new Error('Resposta inválida do servidor - esperado JSON');
+                            return response.text().then(text => {
+                                throw new Error(`Resposta inválida do servidor - esperado JSON: ${text.substring(0, 120)}`);
+                            });
                         }
                         return response.json();
                     })
