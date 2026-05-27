@@ -115,6 +115,7 @@ async function connectToWhatsApp() {
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
+const axios = require("axios");
 const multer = require("multer");
 const { v4: uuidv4 } = require("uuid");
 
@@ -139,7 +140,7 @@ const upload = multer({
   fileFilter: function (req, file, cb) {
     const allowedTypes = /jpeg|jpg|png|pdf/;
     const extname = allowedTypes.test(
-      path.extname(file.originalname).toLowerCase()
+      path.extname(file.originalname).toLowerCase(),
     );
     const mimetype = allowedTypes.test(file.mimetype);
 
@@ -147,7 +148,7 @@ const upload = multer({
       return cb(null, true);
     }
     cb(
-      new Error("Apenas arquivos de imagem (JPEG, PNG) ou PDF são permitidos!")
+      new Error("Apenas arquivos de imagem (JPEG, PNG) ou PDF são permitidos!"),
     );
   },
 });
@@ -166,6 +167,36 @@ app.use(express.json());
 
 // Servir arquivos estáticos
 app.use(express.static(path.join(__dirname, "public")));
+
+// Proxy de imagens remotas para evitar bloqueios de hotlink
+app.get("/proxy-image", async (req, res) => {
+  const imageUrl = req.query.url;
+  if (!imageUrl || !/^https?:\/\//i.test(imageUrl)) {
+    return res.status(400).send("URL inválida");
+  }
+
+  try {
+    const response = await axios.get(imageUrl, {
+      responseType: "arraybuffer",
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        Referer: "https://canaldoclientedesapega.online/",
+      },
+      validateStatus: null,
+    });
+
+    if (response.status !== 200) {
+      return res.status(response.status).send("Falha ao buscar imagem remota");
+    }
+
+    const contentType = response.headers["content-type"] || "image/jpeg";
+    res.set("Content-Type", contentType);
+    res.send(response.data);
+  } catch (error) {
+    console.error("Erro ao proxy de imagem:", error.message || error);
+    res.status(502).send("Erro ao buscar imagem remota");
+  }
+});
 
 // Função para verificar status do WhatsApp
 function verificarStatusWhatsApp() {

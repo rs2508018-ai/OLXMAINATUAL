@@ -72,6 +72,14 @@ function aplicarFallbackImagem(imgElement, produto) {
   imgElement.src = criarPlaceholderImagem(produto);
 }
 
+function getImageSource(imgSrc) {
+  if (typeof imgSrc !== "string") return "";
+  if (/^https?:\/\//i.test(imgSrc)) {
+    return `/proxy-image?url=${encodeURIComponent(imgSrc)}`;
+  }
+  return imgSrc;
+}
+
 function preencherDadosVenda(venda) {
   // Validar dados essenciais
   if (!venda) {
@@ -107,7 +115,7 @@ function preencherDadosVenda(venda) {
       imagemPrincipalEl.onerror = function () {
         aplicarFallbackImagem(this, venda.produto);
       };
-      imagemPrincipalEl.src = venda.imagem[0];
+      imagemPrincipalEl.src = getImageSource(venda.imagem[0]);
     }
 
     // Cria as miniaturas
@@ -120,7 +128,7 @@ function preencherDadosVenda(venda) {
       miniatura.onerror = function () {
         aplicarFallbackImagem(this, venda.produto);
       };
-      miniatura.src = imgSrc;
+      miniatura.src = getImageSource(imgSrc);
 
       // Adicionar handlers para mouse e touch
       function ativarMiniatura() {
@@ -149,7 +157,11 @@ function preencherDadosVenda(venda) {
       imagemPrincipalEl.onerror = function () {
         aplicarFallbackImagem(this, venda.produto);
       };
-      imagemPrincipalEl.src = `/images/${venda.imagem}`;
+      imagemPrincipalEl.src = getImageSource(
+        venda.imagem.startsWith("http")
+          ? venda.imagem
+          : `/images/${venda.imagem}`,
+      );
     }
   }
 
