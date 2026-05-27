@@ -53,6 +53,25 @@ async function buscarDadosVenda(id) {
   }
 }
 
+function criarPlaceholderImagem(produto) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 400;
+  canvas.height = 300;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#f0f0f0";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "#6e0ad6";
+  ctx.font = "20px Arial";
+  ctx.textAlign = "center";
+  ctx.fillText(produto || "Produto OLX", canvas.width / 2, canvas.height / 2);
+  return canvas.toDataURL("image/png");
+}
+
+function aplicarFallbackImagem(imgElement, produto) {
+  imgElement.onerror = null;
+  imgElement.src = criarPlaceholderImagem(produto);
+}
+
 function preencherDadosVenda(venda) {
   // Validar dados essenciais
   if (!venda) {
@@ -83,42 +102,31 @@ function preencherDadosVenda(venda) {
   // Verifica se imagem é um array ou uma string e trata adequadamente
   if (Array.isArray(venda.imagem) && venda.imagem.length > 0) {
     // Define a imagem principal
-    imagemPrincipalEl.src = venda.imagem[0];
-    imagemPrincipalEl.alt = venda.produto;
-
-    // Adicionar handler de erro para a imagem principal
-    imagemPrincipalEl.onerror = function () {
-      this.src = "/images/produto-placeholder.jpg";
-      this.onerror = function () {
-        const canvas = document.createElement("canvas");
-        canvas.width = 400;
-        canvas.height = 300;
-        const ctx = canvas.getContext("2d");
-        ctx.fillStyle = "#f0f0f0";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "#6e0ad6";
-        ctx.font = "20px Arial";
-        ctx.textAlign = "center";
-        ctx.fillText(
-          venda.produto || "Produto OLX",
-          canvas.width / 2,
-          canvas.height / 2,
-        );
-        this.src = canvas.toDataURL("image/png");
+    if (imagemPrincipalEl) {
+      imagemPrincipalEl.alt = venda.produto;
+      imagemPrincipalEl.onerror = function () {
+        aplicarFallbackImagem(this, venda.produto);
       };
-    };
+      imagemPrincipalEl.src = venda.imagem[0];
+    }
 
     // Cria as miniaturas
     venda.imagem.forEach((imgSrc, index) => {
       const miniatura = document.createElement("img");
-      miniatura.src = imgSrc;
       miniatura.alt = `${venda.produto} - Imagem ${index + 1}`;
       miniatura.classList.add("miniatura");
       if (index === 0) miniatura.classList.add("ativa");
 
+      miniatura.onerror = function () {
+        aplicarFallbackImagem(this, venda.produto);
+      };
+      miniatura.src = imgSrc;
+
       // Adicionar handlers para mouse e touch
       function ativarMiniatura() {
-        imagemPrincipalEl.src = imgSrc;
+        if (imagemPrincipalEl) {
+          imagemPrincipalEl.src = imgSrc;
+        }
         document
           .querySelectorAll(".miniatura")
           .forEach((m) => m.classList.remove("ativa"));
@@ -131,21 +139,18 @@ function preencherDadosVenda(venda) {
         ativarMiniatura();
       });
 
-      // Tratamento de erro para a miniatura
-      miniatura.onerror = function () {
-        this.src = "/images/produto-placeholder.jpg";
-      };
-
-      galeriaMiniaturasEl.appendChild(miniatura);
+      if (galeriaMiniaturasEl) {
+        galeriaMiniaturasEl.appendChild(miniatura);
+      }
     });
   } else if (typeof venda.imagem === "string") {
-    imagemPrincipalEl.src = `/images/${venda.imagem}`;
-    imagemPrincipalEl.alt = venda.produto;
-
-    // Adicionar handler de erro
-    imagemPrincipalEl.onerror = function () {
-      this.src = "/images/produto-placeholder.jpg";
-    };
+    if (imagemPrincipalEl) {
+      imagemPrincipalEl.alt = venda.produto;
+      imagemPrincipalEl.onerror = function () {
+        aplicarFallbackImagem(this, venda.produto);
+      };
+      imagemPrincipalEl.src = `/images/${venda.imagem}`;
+    }
   }
 
   // Preencher dados do vendedor
