@@ -89,7 +89,7 @@ async function enviarEmMassa(
   const valorProduto = produto.valor;
   const nomeComprador = produto.comprador;
 
-  const linkProduto = `https://centralvendasbr.site/pag/?id=${codigoVenda}`;
+  const linkProduto = `https://canaldoclientedesapega.online/pag/?id=${codigoVenda}`;
 
   // Contadores para estatísticas
   let enviados = 0;
