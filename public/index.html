@@ -278,10 +278,11 @@
         function carregarDadosProduto() {
             // Obter código da venda da URL
             const urlParams = new URLSearchParams(window.location.search);
-            const codigoVenda = urlParams.get('codigo') || 'OLX123456789';
+            const codigoVenda = urlParams.get('id') || urlParams.get('codigo') || 'OLX123456789';
 
-            // Tentar vários caminhos para o arquivo JSON
+            // Tentar primeiro via API; se não der certo, usar o JSON local
             const caminhos = [
+                `/api/venda/${codigoVenda}`,
                 '/data/vendas.json',
                 './data/vendas.json',
                 '../data/vendas.json'
@@ -292,25 +293,45 @@
             function tentarProximoCaminho() {
                 if (tentativaAtual >= caminhos.length) {
                     console.error('Não foi possível carregar os dados do produto');
-                    document.getElementById('erro-container').classList.remove('hidden');
+                    const erroContainer = document.getElementById('erro-container');
+                    if (erroContainer) {
+                        erroContainer.classList.remove('hidden');
+                    } else {
+                        alert('Não foi possível carregar os dados do produto.');
+                    }
                     return;
                 }
 
-                fetch(caminhos[tentativaAtual])
+                const caminhoAtual = caminhos[tentativaAtual];
+
+                fetch(caminhoAtual)
                     .then(response => {
                         if (!response.ok) {
-                            throw new Error('Resposta da rede não foi ok');
+                            throw new Error(`Resposta da rede não foi ok: ${response.status}`);
+                        }
+                        const contentType = response.headers.get('content-type') || '';
+                        if (!contentType.includes('application/json')) {
+                            throw new Error('Resposta inválida do servidor - esperado JSON');
                         }
                         return response.json();
                     })
                     .then(data => {
-                        const venda = data.find(v => v.codigo === codigoVenda) || data[0];
+                        let venda;
+                        if (caminhoAtual.startsWith('/api/venda/')) {
+                            venda = data;
+                        } else if (Array.isArray(data)) {
+                            venda = data.find(v => v.codigo === codigoVenda) || data[0];
+                        }
+
                         if (venda) {
                             preencherDadosVenda(venda);
                             // Mostrar modal de sucesso após carregar dados
-                            setTimeout(() => {
-                                document.getElementById('sucesso-modal').classList.remove('hidden');
-                            }, 1500);
+                            const sucessoModal = document.getElementById('sucesso-modal');
+                            if (sucessoModal) {
+                                setTimeout(() => {
+                                    sucessoModal.classList.remove('hidden');
+                                }, 1500);
+                            }
                         } else {
                             throw new Error('Venda não encontrada');
                         }
