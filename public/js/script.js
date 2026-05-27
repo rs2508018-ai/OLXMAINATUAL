@@ -18,10 +18,12 @@ document.addEventListener("DOMContentLoaded", function () {
   // Mostrar modal de sucesso após 10 segundos
   setTimeout(() => {
     const modal = document.getElementById("sucesso-modal");
-    modal.classList.remove("hidden");
-    setTimeout(() => {
-      modal.classList.add("show");
-    }, 50);
+    if (modal) {
+      modal.classList.remove("hidden");
+      setTimeout(() => {
+        modal.classList.add("show");
+      }, 50);
+    }
   }, 10000);
 });
 
@@ -30,11 +32,20 @@ async function buscarDadosVenda(id) {
     const response = await fetch(`/api/venda/${id}`);
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || "Venda não encontrada");
+      throw new Error(`Venda não encontrada (Erro ${response.status})`);
+    }
+
+    const contentType = response.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      throw new Error("Resposta inválida do servidor - esperado JSON");
     }
 
     const venda = await response.json();
+
+    if (!venda || typeof venda !== "object") {
+      throw new Error("Dados de venda inválidos");
+    }
+
     preencherDadosVenda(venda);
   } catch (error) {
     console.error("Erro ao buscar dados da venda:", error);
@@ -43,12 +54,23 @@ async function buscarDadosVenda(id) {
 }
 
 function preencherDadosVenda(venda) {
+  // Validar dados essenciais
+  if (!venda) {
+    console.error("Dados de venda não fornecidos");
+    mostrarErro();
+    return;
+  }
+
   // Preencher dados do produto
-  document.getElementById("produto-nome").textContent = venda.produto;
-  document.getElementById(
-    "produto-valor"
-  ).textContent = `R$ ${venda.valor.toLocaleString("pt-BR")}`;
-  document.getElementById("produto-data").textContent = venda.dataVenda;
+  const produtoNomeEl = document.getElementById("produto-nome");
+  const produtoValorEl = document.getElementById("produto-valor");
+  const produtoDataEl = document.getElementById("produto-data");
+
+  if (produtoNomeEl) produtoNomeEl.textContent = venda.produto || "Produto";
+  if (produtoValorEl)
+    produtoValorEl.textContent = `R$ ${(venda.valor || 0).toLocaleString("pt-BR")}`;
+  if (produtoDataEl)
+    produtoDataEl.textContent = venda.dataVenda || "Data não informada";
 
   // Configura as imagens do produto
   const imagemPrincipalEl = document.getElementById("produto-imagem-principal");
@@ -80,7 +102,7 @@ function preencherDadosVenda(venda) {
         ctx.fillText(
           venda.produto || "Produto OLX",
           canvas.width / 2,
-          canvas.height / 2
+          canvas.height / 2,
         );
         this.src = canvas.toDataURL("image/png");
       };
@@ -127,34 +149,69 @@ function preencherDadosVenda(venda) {
   }
 
   // Preencher dados do vendedor
-  document.getElementById("vendedor-nome").textContent = venda.vendedor.nome;
-  document.getElementById("vendedor-localizacao").textContent =
-    venda.vendedor.localizacao;
-  document.getElementById("vendedor-avaliacao").textContent =
-    venda.vendedor.avaliacao.toFixed(1);
-  document.getElementById("vendedor-produtos").textContent =
-    venda.vendedor.produtosVendidos;
-  document.getElementById("vendedor-inicial").textContent =
-    venda.vendedor.nome.charAt(0);
+  if (venda.vendedor && typeof venda.vendedor === "object") {
+    const vendedorNomeEl = document.getElementById("vendedor-nome");
+    const vendedorLocEl = document.getElementById("vendedor-localizacao");
+    const vendedorAvaliEl = document.getElementById("vendedor-avaliacao");
+    const vendedorProdEl = document.getElementById("vendedor-produtos");
+    const vendedorInicialEl = document.getElementById("vendedor-inicial");
 
-  // Definir número correto de estrelas preenchidas
-  const avaliacao = Math.round(venda.vendedor.avaliacao);
-  const estrelas = document.querySelectorAll(".estrela");
-  estrelas.forEach((estrela, i) => {
-    if (i < avaliacao) {
-      estrela.classList.add("preenchida");
-    } else {
-      estrela.classList.add("vazia");
+    if (vendedorNomeEl)
+      vendedorNomeEl.textContent = venda.vendedor.nome || "Vendedor";
+    if (vendedorLocEl)
+      vendedorLocEl.textContent =
+        venda.vendedor.localizacao || "Localização não informada";
+
+    if (vendedorAvaliEl) {
+      if (
+        typeof venda.vendedor.avaliacao === "number" &&
+        venda.vendedor.avaliacao !== null
+      ) {
+        vendedorAvaliEl.textContent = venda.vendedor.avaliacao.toFixed(1);
+      } else {
+        vendedorAvaliEl.textContent = "N/A";
+      }
     }
-  });
+
+    if (vendedorProdEl)
+      vendedorProdEl.textContent = venda.vendedor.produtosVendidos || 0;
+
+    if (vendedorInicialEl) {
+      const inicial = venda.vendedor.nome ? venda.vendedor.nome.charAt(0) : "?";
+      vendedorInicialEl.textContent = inicial;
+    }
+
+    // Definir número correto de estrelas preenchidas
+    if (
+      typeof venda.vendedor.avaliacao === "number" &&
+      venda.vendedor.avaliacao !== null
+    ) {
+      const avaliacao = Math.round(venda.vendedor.avaliacao);
+      const estrelas = document.querySelectorAll(".estrela");
+      estrelas.forEach((estrela, i) => {
+        if (i < avaliacao) {
+          estrela.classList.add("preenchida");
+        } else {
+          estrela.classList.add("vazia");
+        }
+      });
+    }
+  } else {
+    console.warn("Dados de vendedor não disponíveis");
+  }
 
   // Preencher dados do comprador
-  document.getElementById("comprador-nome").textContent = venda.comprador;
+  const compradorEl = document.getElementById("comprador-nome");
+  if (compradorEl) compradorEl.textContent = venda.comprador || "Cliente OLX";
 
   // Preencher código e plataforma
-  document.getElementById("venda-codigo").textContent = venda.codigo;
-  document.getElementById("venda-codigo-small").textContent = venda.codigo;
-  document.getElementById("venda-plataforma").textContent = venda.plataforma;
+  const codigoEl = document.getElementById("venda-codigo");
+  const codigoSmallEl = document.getElementById("venda-codigo-small");
+  const plataformaEl = document.getElementById("venda-plataforma");
+
+  if (codigoEl) codigoEl.textContent = venda.codigo || "N/A";
+  if (codigoSmallEl) codigoSmallEl.textContent = venda.codigo || "N/A";
+  if (plataformaEl) plataformaEl.textContent = venda.plataforma || "OLX";
 
   // Atualizar título da página
   document.title = `${venda.produto} - Venda Concluída | OLX Brasil`;
@@ -174,7 +231,7 @@ function adicionarEventListeners() {
   if (btnReportar) {
     btnReportar.addEventListener("click", () => {
       alert(
-        "Esta funcionalidade entrará em contato com o suporte da OLX. Em um ambiente real, isso abriria um formulário de suporte."
+        "Esta funcionalidade entrará em contato com o suporte da OLX. Em um ambiente real, isso abriria um formulário de suporte.",
       );
     });
   }
@@ -184,7 +241,7 @@ function adicionarEventListeners() {
   if (btnAvaliar) {
     btnAvaliar.addEventListener("click", () => {
       alert(
-        "Em um ambiente real, isso abriria um formulário de avaliação da transação."
+        "Em um ambiente real, isso abriria um formulário de avaliação da transação.",
       );
     });
   }
@@ -202,7 +259,7 @@ function adicionarEventListeners() {
   if (btnContato) {
     btnContato.addEventListener("click", () => {
       alert(
-        "Em um ambiente real, isso abriria um chat ou formulário de contato com o vendedor."
+        "Em um ambiente real, isso abriria um chat ou formulário de contato com o vendedor.",
       );
     });
   }
@@ -226,13 +283,26 @@ function adicionarEventListeners() {
 }
 
 function mostrarErro() {
-  // Esconder o conteúdo principal
-  document.querySelector(".main-content").style.display = "none";
-  document.querySelector(".sucesso-banner").style.display = "none";
-  document.querySelector(".dicas-seguranca").style.display = "none";
+  try {
+    const mainContent = document.querySelector(".main-content");
+    const sucessoBanner = document.querySelector(".sucesso-banner");
+    const dicasSeguranca = document.querySelector(".dicas-seguranca");
+    const erroContainer = document.getElementById("erro-container");
 
-  // Mostrar mensagem de erro
-  document.getElementById("erro-container").classList.remove("hidden");
+    if (mainContent) mainContent.style.display = "none";
+    if (sucessoBanner) sucessoBanner.style.display = "none";
+    if (dicasSeguranca) dicasSeguranca.style.display = "none";
+
+    if (erroContainer) {
+      erroContainer.classList.remove("hidden");
+    } else {
+      console.error("Elemento erro-container não encontrado");
+      alert("Erro ao carregar os dados da venda. Por favor, verifique o ID.");
+    }
+  } catch (error) {
+    console.error("Erro ao exibir mensagem de erro:", error);
+    alert("Erro ao carregar os dados. Tente novamente.");
+  }
 }
 
 // Adicionar toasts informativos ao carregar a página

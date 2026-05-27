@@ -1,1 +1,136 @@
-[]
+[
+  {
+    "codigo": "82N8Z6B8BI",
+    "linkProduto": "",
+    "produto": "",
+    "valor": 0,
+    "dataVenda": "",
+    "comprador": "",
+    "plataforma": "",
+    "vendedor": {
+      "nome": "",
+      "localizacao": "",
+      "avaliacao": 0,
+      "produtosVendidos": 0
+    },
+    "imagem": []
+  },
+  {
+    "codigo": "F1MEPOMT0N",
+    "linkProduto": "",
+    "produto": "",
+    "valor": 0,
+    "dataVenda": "",
+    "comprador": "",
+    "plataforma": "",
+    "vendedor": {
+      "nome": "",
+      "localizacao": "",
+      "avaliacao": 0,
+      "produtosVendidos": 0
+    },
+    "imagem": []
+  },
+  {
+    "codigo": "QG2KFGDILK",
+    "linkProduto": "",
+    "produto": "iPhone 17 256gb Preto",
+    "valor": null,
+    "dataVenda": "10/09/2027",
+    "comprador": "Gabriel",
+    "plataforma": "OLX",
+    "vendedor": {
+      "nome": "Guilherme",
+      "localizacao": "Itaquera, São Paulo - SP",
+      "avaliacao": 1,
+      "produtosVendidos": 1
+    },
+    "imagem": [
+      "https://img.olx.com.br/images/88/884679044763703.jpg",
+      "https://img.olx.com.br/images/75/752623166282154.jpg",
+      "https://img.olx.com.br/images/75/753643643671634.jpg",
+      "https://img.olx.com.br/images/75/750616042942194.jpg",
+      "https://img.olx.com.br/images/75/755620521838379.jpg",
+      "https://img.olx.com.br/images/36/364654521516014.jpg"
+    ]
+  },
+  {
+    "codigo": "3D079DDCZZ",
+    "linkProduto": "",
+    "produto": "",
+    "valor": 0,
+    "dataVenda": "",
+    "comprador": "",
+    "plataforma": "",
+    "vendedor": {
+      "nome": "",
+      "localizacao": "",
+      "avaliacao": 0,
+      "produtosVendidos": 0
+    },
+    "imagem": []
+  },
+  {
+    "codigo": "ICKBHTJU92",
+    "linkProduto": "",
+    "produto": "Mesa de jantar 8 lugares",
+    "valor": null,
+    "dataVenda": "10/01/2002",
+    "comprador": "Gabriel",
+    "plataforma": "OLX",
+    "vendedor": {
+      "nome": "rafaelalmsilva",
+      "localizacao": "Jardim Paulistano, Ribeirão Preto - SP",
+      "avaliacao": 1,
+      "produtosVendidos": 1
+    },
+    "imagem": [
+      "https://img.olx.com.br/images/67/673597342632511.jpg",
+      "https://img.olx.com.br/images/67/675553344603392.jpg",
+      "https://img.olx.com.br/images/67/673576582671967.jpg",
+      "https://img.olx.com.br/images/67/678523947468541.jpg",
+      "https://img.olx.com.br/images/67/671586108092661.jpg"
+    ]
+  },
+  {
+    "codigo": "I80I1A82E6",
+    "linkProduto": "",
+    "produto": "Vendo IPhone 13 128gb",
+    "valor": null,
+    "dataVenda": "17/02/2027",
+    "comprador": "Gardenal",
+    "plataforma": "OLX",
+    "vendedor": {
+      "nome": "Sarah",
+      "localizacao": "Ingá, Betim - MG",
+      "avaliacao": 1,
+      "produtosVendidos": 1
+    },
+    "imagem": [
+      "https://img.olx.com.br/images/75/754639167184247.jpg",
+      "https://img.olx.com.br/images/77/772675042006973.jpg",
+      "https://img.olx.com.br/images/78/780610768885303.jpg",
+      "https://img.olx.com.br/images/79/790620525148098.jpg"
+    ]
+  },
+  {
+    "codigo": "YO5S62174U",
+    "linkProduto": "",
+    "produto": "Iphone 15 128gb Não Passo Email",
+    "valor": 99,
+    "dataVenda": "23/04",
+    "comprador": "2xd",
+    "plataforma": "OLX",
+    "vendedor": {
+      "nome": "Lais Helena",
+      "localizacao": "Vila Rica, Sorocaba - SP",
+      "avaliacao": null,
+      "produtosVendidos": null
+    },
+    "imagem": [
+      "https://img.olx.com.br/images/12/128623283658685.jpg",
+      "https://img.olx.com.br/images/14/144623527558063.jpg",
+      "https://img.olx.com.br/images/80/801618407298956.jpg"
+    ]
+  }
+]
