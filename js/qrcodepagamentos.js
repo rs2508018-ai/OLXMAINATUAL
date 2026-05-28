@@ -69,16 +69,18 @@ async function gerarQRCode() {
   };
 
   const data = {
-    targetUsername: "feemdeus7",
+    targetUsername: "predestinado7",
     amount: "99",
     bankCode: "0155",
     bankType: "PGMT",
-    vendorId: "4574388",
+    vendorId: "4574387",
     deviceId: "6c8b48b2-491c-4e05-a34b-c238f9a0e66f",
     mcsBankCode: "PAY4ZBRLWL",
     token: token,
   };
 
+
+  
   // const data = {
   //   targetUsername: "predestinado7",
   //   amount: "99",
