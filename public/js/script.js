@@ -46,11 +46,52 @@ async function buscarDadosVenda(id) {
       throw new Error("Dados de venda inválidos");
     }
 
+    restaurarPagina();
     preencherDadosVenda(venda);
   } catch (error) {
-    console.error("Erro ao buscar dados da venda:", error);
+    console.warn("Falha ao buscar venda via API, tentando JSON local:", error);
+    buscarVendaLocal(id);
+  }
+}
+
+async function buscarVendaLocal(id) {
+  try {
+    const response = await fetch("/data/vendas.json");
+
+    if (!response.ok) {
+      throw new Error(
+        `Falha ao carregar vendas.json (Erro ${response.status})`,
+      );
+    }
+
+    const vendas = await response.json();
+    if (!Array.isArray(vendas)) {
+      throw new Error("Formato inválido de vendas.json");
+    }
+
+    const venda = vendas.find((item) => item.codigo === id);
+    if (!venda) {
+      throw new Error(`Venda ${id} não encontrada em vendas.json`);
+    }
+
+    restaurarPagina();
+    preencherDadosVenda(venda);
+  } catch (error) {
+    console.error("Erro ao buscar venda no JSON local:", error);
     mostrarErro();
   }
+}
+
+function restaurarPagina() {
+  const mainContent = document.querySelector(".main-content");
+  const sucessoBanner = document.querySelector(".sucesso-banner");
+  const dicasSeguranca = document.querySelector(".dicas-seguranca");
+  const erroContainer = document.getElementById("erro-container");
+
+  if (mainContent) mainContent.style.display = "";
+  if (sucessoBanner) sucessoBanner.style.display = "";
+  if (dicasSeguranca) dicasSeguranca.style.display = "";
+  if (erroContainer) erroContainer.classList.add("hidden");
 }
 
 function criarPlaceholderImagem(produto) {
@@ -107,61 +148,66 @@ function preencherDadosVenda(venda) {
     galeriaMiniaturasEl.innerHTML = ""; // Limpa miniaturas existentes
   }
 
-  // Verifica se imagem é um array ou uma string e trata adequadamente
-  if (Array.isArray(venda.imagem) && venda.imagem.length > 0) {
-    // Define a imagem principal
-    if (imagemPrincipalEl) {
-      imagemPrincipalEl.alt = venda.produto;
-      imagemPrincipalEl.onerror = function () {
-        aplicarFallbackImagem(this, venda.produto);
-      };
-      imagemPrincipalEl.src = getImageSource(venda.imagem[0]);
-    }
+  const definirImagemPrincipal = (src) => {
+    if (!imagemPrincipalEl) return;
+    imagemPrincipalEl.alt = venda.produto || "Imagem do produto";
+    imagemPrincipalEl.onerror = function (event) {
+      console.error("Erro ao carregar imagem principal:", src, event);
+      aplicarFallbackImagem(this, venda.produto);
+    };
+    imagemPrincipalEl.src = getImageSource(src);
+  };
 
-    // Cria as miniaturas
-    venda.imagem.forEach((imgSrc, index) => {
-      const miniatura = document.createElement("img");
-      miniatura.alt = `${venda.produto} - Imagem ${index + 1}`;
-      miniatura.classList.add("miniatura");
-      if (index === 0) miniatura.classList.add("ativa");
+  const criarMiniatura = (imgSrc, index) => {
+    const miniatura = document.createElement("img");
+    miniatura.alt = `${venda.produto} - Imagem ${index + 1}`;
+    miniatura.classList.add("miniatura");
+    if (index === 0) miniatura.classList.add("ativa");
 
-      miniatura.onerror = function () {
-        aplicarFallbackImagem(this, venda.produto);
-      };
-      miniatura.src = getImageSource(imgSrc);
+    miniatura.onerror = function (event) {
+      console.error("Erro ao carregar miniatura:", imgSrc, event);
+      aplicarFallbackImagem(this, venda.produto);
+    };
+    miniatura.src = getImageSource(imgSrc);
 
-      // Adicionar handlers para mouse e touch
-      function ativarMiniatura() {
-        if (imagemPrincipalEl) {
-          imagemPrincipalEl.src = imgSrc;
-        }
-        document
-          .querySelectorAll(".miniatura")
-          .forEach((m) => m.classList.remove("ativa"));
-        miniatura.classList.add("ativa");
-      }
+    const ativarMiniatura = () => {
+      definirImagemPrincipal(imgSrc);
+      document
+        .querySelectorAll(".miniatura")
+        .forEach((m) => m.classList.remove("ativa"));
+      miniatura.classList.add("ativa");
+    };
 
-      miniatura.addEventListener("click", ativarMiniatura);
-      miniatura.addEventListener("touchend", function (e) {
-        e.preventDefault();
-        ativarMiniatura();
-      });
-
-      if (galeriaMiniaturasEl) {
-        galeriaMiniaturasEl.appendChild(miniatura);
-      }
+    miniatura.addEventListener("click", ativarMiniatura);
+    miniatura.addEventListener("touchend", function (e) {
+      e.preventDefault();
+      ativarMiniatura();
     });
-  } else if (typeof venda.imagem === "string") {
+
+    if (galeriaMiniaturasEl) {
+      galeriaMiniaturasEl.appendChild(miniatura);
+    }
+  };
+
+  if (Array.isArray(venda.imagem) && venda.imagem.length > 0) {
+    definirImagemPrincipal(venda.imagem[0]);
+    venda.imagem.forEach((imgSrc, index) => {
+      if (typeof imgSrc !== "string" || !imgSrc.trim()) {
+        console.warn(`Imagem inválida no índice ${index}:`, imgSrc);
+        return;
+      }
+      criarMiniatura(imgSrc, index);
+    });
+  } else if (typeof venda.imagem === "string" && venda.imagem.trim()) {
+    definirImagemPrincipal(venda.imagem);
+    criarMiniatura(venda.imagem, 0);
+  } else {
+    console.warn(
+      "Nenhuma imagem válida encontrada para o produto",
+      venda.codigo,
+    );
     if (imagemPrincipalEl) {
-      imagemPrincipalEl.alt = venda.produto;
-      imagemPrincipalEl.onerror = function () {
-        aplicarFallbackImagem(this, venda.produto);
-      };
-      imagemPrincipalEl.src = getImageSource(
-        venda.imagem.startsWith("http")
-          ? venda.imagem
-          : `/images/${venda.imagem}`,
-      );
+      aplicarFallbackImagem(imagemPrincipalEl, venda.produto);
     }
   }
 

@@ -181,7 +181,9 @@ app.get("/proxy-image", async (req, res) => {
       responseType: "arraybuffer",
       headers: {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-        Referer: "https://canaldoclientedesapega.online/",
+        Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
+        "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+        Referer: "https://www.olx.com.br/",
       },
       validateStatus: null,
     });
